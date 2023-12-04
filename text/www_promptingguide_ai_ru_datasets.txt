@@ -1,0 +1,13 @@
+DatasetsDatasets
+(Отсортировано по имени)
+
+Anthropic's Red Team dataset (opens in a new tab), (paper) (opens in a new tab)
+Awesome ChatGPT Prompts (opens in a new tab)
+DiffusionDB (opens in a new tab)
+Midjourney Prompts (opens in a new tab)
+P3 - Public Pool of Prompts (opens in a new tab)
+PartiPrompts (opens in a new tab)
+Real Toxicity Prompts (opens in a new tab)
+Stable Diffusion Dataset (opens in a new tab)
+WritingPrompts (opens in a new tab)
+NotebooksДополнительные статьи

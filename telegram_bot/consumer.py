@@ -19,10 +19,10 @@ class Consumer:
         self.dataframe = None
 
     async def create_context(
-            self, question, df, max_len=5000, size="ada"
+            self, question, df, model, max_len=5000
     ):
         q_embeddings = self.openai.client.embeddings.create(
-            input=question, model='text-embedding-ada-002'
+            input=question, model=model
         ).data[0].embedding
 
         df['distances'] = distances_from_embeddings(q_embeddings, df['embeddings'].values, distance_metric='cosine')
@@ -46,15 +46,16 @@ class Consumer:
     async def answer_question(
             self,
             question,
-            model="gpt-3.5-turbo",
+            size,
+            model,
             max_len=4000,
-            size="ada",
             debug=False,
             max_tokens=150,
             stop_sequence=None
     ):
         """
-        Answer a question based on the most similar context from the dataframe texts
+        Ответьте на вопрос используя текст из датафрейма, основываясь на самом
+        близком контексте.
         """
 
         df = pd.read_csv('text/embeddings.csv', index_col=0)
@@ -63,21 +64,23 @@ class Consumer:
         context = await self.create_context(
             question,
             df,
+            model='text-embedding-ada-002',
             max_len=max_len,
             size=size,
         )
-        # If debug, print the raw model response
+        # Если debug=True, распечатайте сырой ответ от модели.
         if debug:
             print("Context:\n" + context)
             print("\n\n")
 
         try:
-            # Create a chat completion using the question and context
+            # Создайте chat completion используя question и context.
             response = self.openai.client.chat.completions.create(
                 model=model,
                 messages=[
                     {"role": "system",
-                     "content": "Answer the question based on the context below, and if the question can't be answered based on the context, say \"I don't know\"\n\n"},
+                     "content": "Answer the question based on the context below, and if the question can't be answered"
+                                " based on the context, say \"I don't know\"\n\n"},
                     {"role": "user", f"content": f"Context: {context}\n\n---\n\nQuestion: {question}\nAnswer:"}
                 ],
                 temperature=0,
@@ -93,7 +96,7 @@ class Consumer:
             return ""
 
     async def process_update(self, update):
-        """Process telegram update"""
+        """Обработайте обновление из telegram"""
 
         chat_id = update['message']['chat']['id']
         message = update['message']['text']
@@ -113,7 +116,7 @@ class Consumer:
                            f" send your questions to me, i'm provide you an answer!")
             elif message.startswith('/ask'):
                 question = message.split(' ', maxsplit=1)[1]
-                await self.answer_question(question)
+                await self.answer_question(question, model="gpt-3.5-turbo", size="ada")
 
         await self.telegram_client.send_message(chat_id, message)
 
